@@ -19,13 +19,12 @@ export async function scrapeTable(): Promise<Result | null> {
     const table = $("table");
     const firstRow = table.find("tr").eq(3);
     const date: string = firstRow.find("td").eq(0).text().trim();
-    const nextRow = table.find("tr").eq(4); // Наступний рядок
+    const nextRow = table.find("tr").eq(4);
 
     const cleanTimeString = (time: string): string => {
-      return time
-        .replace(/[^\d.:,-]/g, "")
-        .replace(/,\s*$/, "")
-        .trim();
+      const regex = /\d{2}:\d{2}-\d{2}:\d{2}/;
+      const match = time.match(regex);
+      return match ? match[0] : "";
     };
 
     const getQueueTimes = (

@@ -4,12 +4,12 @@ import { scrapeTable } from "./scrape";
 const app = express();
 const port = 3000;
 
-app.get("/outages", async (req, res) => {
+app.get("/", async (req, res) => {
   try {
     const result = await scrapeTable();
     res.json(result);
   } catch (error) {
-    res.status(500).send("Помилка сервера");
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 
