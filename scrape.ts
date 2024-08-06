@@ -42,15 +42,17 @@ export async function scrapeTable(): Promise<Result | null> {
         .filter((item) => item.length > 0);
     };
 
-    const firstQueueTimes: string[] = getQueueTimes(firstRow, 1);
+    let firstQueueTimes: string[] = getQueueTimes(firstRow, 1);
+    if (firstQueueTimes.length === 0) {
+      firstQueueTimes = ["Очікується"];
+    }
+
     const nextDate: string = nextRow.find("td").eq(0).text().trim();
-    const nextQueueTimes: string[] = nextRow
-      .find("td")
-      .eq(1)
-      .text()
-      .includes("Очікується")
-      ? ["Очікується"]
-      : getQueueTimes(nextRow, 1);
+    let nextQueueTimes: string[] = getQueueTimes(nextRow, 1);
+    
+    if (nextQueueTimes.length === 0) {
+      nextQueueTimes = ["Очікується"];
+    }
 
     const updatedText = $("body")
       .text()
