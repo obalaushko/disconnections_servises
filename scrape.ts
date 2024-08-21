@@ -2,18 +2,23 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 
 export interface Result {
+  url: string;
   date: string;
   firstQueueTimes: string[];
   updatedTime: string | null;
   nextDate: string;
   nextQueueTimes: string[];
 }
+enum Website {
+  URL = "https://www.roe.vsei.ua/disconnections",
+}
 
 export async function scrapeTable(): Promise<Result | null> {
   try {
-    const { data } = await axios.get("https://www.roe.vsei.ua/disconnections", {
+    const { data } = await axios.get(Website.URL, {
       timeout: 60000,
     });
+
     const $ = cheerio.load(data);
 
     const table = $("table");
@@ -49,7 +54,7 @@ export async function scrapeTable(): Promise<Result | null> {
 
     const nextDate: string = nextRow.find("td").eq(0).text().trim();
     let nextQueueTimes: string[] = getQueueTimes(nextRow, 1);
-    
+
     if (nextQueueTimes.length === 0) {
       nextQueueTimes = ["Очікується"];
     }
@@ -62,6 +67,7 @@ export async function scrapeTable(): Promise<Result | null> {
       : null;
 
     return {
+      url: Website.URL,
       date,
       firstQueueTimes,
       nextDate,
