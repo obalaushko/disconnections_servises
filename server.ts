@@ -1,8 +1,25 @@
 import express from "express";
 import { scrapeTable } from "./scrape";
+import os from "os";
 
 const app = express();
 const port = 3000;
+
+function getLocalIPAddress() {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    const ifaceInfo = interfaces[name];
+    if (ifaceInfo) { // перевірка на undefined
+      for (const iface of ifaceInfo) {
+        if (iface.family === 'IPv4' && !iface.internal) {
+          return iface.address;
+        }
+      }
+    }
+  }
+  return 'localhost';
+}
+
 
 app.get("/", async (req, res) => {
   try {
@@ -14,5 +31,6 @@ app.get("/", async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Сервер працює на http://localhost:${port}`);
+  const ipAddress = getLocalIPAddress();
+  console.log(`Сервер працює на http://${ipAddress}:${port}`);
 });
