@@ -21,6 +21,7 @@ const execAsync = promisify(exec);
 
 async function fetchWithCurl(): Promise<string> {
   try {
+    console.log("Refetch with curl.");
     const { stdout, stderr } = await execAsync(
       "curl -k https://www.roe.vsei.ua/disconnections"
     );
@@ -45,19 +46,14 @@ async function fetchWithAxios(): Promise<string> {
     return data;
   } catch (error) {
     console.error(`Error: ${error.message}`);
-    throw error;
+    return await fetchWithCurl();
   }
 }
 
 export async function scrapeTable(): Promise<Result | null> {
   try {
-    let data;
-    if (Bun.env.USE_CURL === "1") {
-      data = await fetchWithCurl();
-    } else if (Bun.env.USE_CURL === "0") {
-      data = await fetchWithAxios();
-    }
-    
+    const data = await fetchWithAxios();
+
     const $ = cheerio.load(data);
 
     const table = $("table");
@@ -77,11 +73,13 @@ export async function scrapeTable(): Promise<Result | null> {
     ): string[] => {
       const queueCell = row.find("td").eq(queueNumber);
       console.log(`Queue Cell HTML: ${queueCell.html()}`);
-    
-      const times = queueCell.contents().map((_, el) => $(el).text().trim()).get();
+
+      const times = queueCell
+        .contents()
+        .map((_, el) => $(el).text().trim())
+        .get();
       return times.filter((time) => /\d{2}:\d{2}\s*-\s*\d{2}:\d{2}/.test(time));
     };
-
 
     let firstQueueTimes: string[] = getQueueTimes(firstRow, 1);
     if (firstQueueTimes.length === 0) {
