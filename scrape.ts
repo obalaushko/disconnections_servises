@@ -1,6 +1,9 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
 
+import { exec } from "child_process";
+import { promisify } from "util";
+
 export interface Result {
   url: string;
   date: string;
@@ -13,12 +16,48 @@ enum Website {
   URL = "https://www.roe.vsei.ua/disconnections",
 }
 
-export async function scrapeTable(): Promise<Result | null> {
+// Перетворюємо exec на функцію, яка повертає проміс
+const execAsync = promisify(exec);
+
+async function fetchWithCurl(): Promise<string> {
+  try {
+    const { stdout, stderr } = await execAsync(
+      "curl -k https://www.roe.vsei.ua/disconnections"
+    );
+
+    if (stderr) {
+      console.warn(`Stderr: ${stderr}`);
+      // Ви можете обробляти stderr додатково або ігнорувати
+    }
+
+    return stdout; // Повертаємо дані сторінки
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
+    throw error; // Генеруємо помилку, щоб викликаючий код міг її обробити
+  }
+}
+
+async function fetchWithAxios(): Promise<string> {
   try {
     const { data } = await axios.get(Website.URL, {
       timeout: 60000,
     });
+    return data;
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
+    throw error;
+  }
+}
 
+export async function scrapeTable(): Promise<Result | null> {
+  try {
+    let data;
+    if (Bun.env.USE_CURL === "1") {
+      data = await fetchWithCurl();
+    } else if (Bun.env.USE_CURL === "0") {
+      data = await fetchWithAxios();
+    }
+    
     const $ = cheerio.load(data);
 
     const table = $("table");
@@ -26,26 +65,23 @@ export async function scrapeTable(): Promise<Result | null> {
     const date: string = firstRow.find("td").eq(0).text().trim();
     const nextRow = table.find("tr").eq(4);
 
-    const cleanTimeString = (time: string): string => {
-      const regex = /\d{2}:\d{2}-\d{2}:\d{2}/;
-      const match = time.match(regex);
-      return match ? match[0] : "";
-    };
+    // const cleanTimeString = (time: string): string => {
+    //   const regex = /\d{2}:\d{2}-\d{2}:\d{2}/;
+    //   const match = time.match(regex);
+    //   return match ? match[0] : "";
+    // };
 
     const getQueueTimes = (
       row: cheerio.Cheerio<cheerio.Element>,
       queueNumber: number
     ): string[] => {
-      const queueCellIndex = queueNumber;
-      const queueTimesHtml = row.find("td").eq(queueCellIndex).html();
-      if (!queueTimesHtml) {
-        return [];
-      }
-      return queueTimesHtml
-        .split("<p>")
-        .map((item) => cleanTimeString(item.replace(/<\/?p>/g, "").trim()))
-        .filter((item) => item.length > 0);
+      const queueCell = row.find("td").eq(queueNumber);
+      console.log(`Queue Cell HTML: ${queueCell.html()}`);
+    
+      const times = queueCell.contents().map((_, el) => $(el).text().trim()).get();
+      return times.filter((time) => /\d{2}:\d{2}\s*-\s*\d{2}:\d{2}/.test(time));
     };
+
 
     let firstQueueTimes: string[] = getQueueTimes(firstRow, 1);
     if (firstQueueTimes.length === 0) {
