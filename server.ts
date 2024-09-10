@@ -24,6 +24,7 @@ function getLocalIPAddress() {
 app.get("/", async (req, res) => {
   try {
     const result = await scrapeTable();
+    console.log(result);
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: 'Server Error' });

@@ -1,9 +1,6 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
 
-import { exec } from "child_process";
-import { promisify } from "util";
-
 export interface Result {
   url: string;
   date: string;
@@ -16,43 +13,12 @@ enum Website {
   URL = "https://www.roe.vsei.ua/disconnections",
 }
 
-// Перетворюємо exec на функцію, яка повертає проміс
-const execAsync = promisify(exec);
 
-async function fetchWithCurl(): Promise<string> {
-  try {
-    console.log("Refetch with curl.");
-    const { stdout, stderr } = await execAsync(
-      "curl -k https://www.roe.vsei.ua/disconnections"
-    );
-
-    if (stderr) {
-      console.warn(`Stderr: ${stderr}`);
-      // Ви можете обробляти stderr додатково або ігнорувати
-    }
-
-    return stdout; // Повертаємо дані сторінки
-  } catch (error) {
-    console.error(`Error: ${error.message}`);
-    throw error; // Генеруємо помилку, щоб викликаючий код міг її обробити
-  }
-}
-
-async function fetchWithAxios(): Promise<string> {
+export async function scrapeTable(): Promise<Result | null> {
   try {
     const { data } = await axios.get(Website.URL, {
       timeout: 60000,
     });
-    return data;
-  } catch (error) {
-    console.error(`Error: ${error.message}`);
-    return await fetchWithCurl();
-  }
-}
-
-export async function scrapeTable(): Promise<Result | null> {
-  try {
-    const data = await fetchWithAxios();
 
     const $ = cheerio.load(data);
 
@@ -72,7 +38,6 @@ export async function scrapeTable(): Promise<Result | null> {
       queueNumber: number
     ): string[] => {
       const queueCell = row.find("td").eq(queueNumber);
-      console.log(`Queue Cell HTML: ${queueCell.html()}`);
 
       const times = queueCell
         .contents()
