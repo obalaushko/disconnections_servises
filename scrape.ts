@@ -1,5 +1,6 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
+import { add, format } from "date-fns";
 
 export interface Result {
   url: string;
@@ -12,7 +13,6 @@ export interface Result {
 enum Website {
   URL = "https://www.roe.vsei.ua/disconnections",
 }
-
 
 export async function scrapeTable(): Promise<Result | null> {
   try {
@@ -51,7 +51,9 @@ export async function scrapeTable(): Promise<Result | null> {
       firstQueueTimes = ["Очікується"];
     }
 
-    const nextDate: string = nextRow.find("td").eq(0).text().trim();
+    const nextDate: string =
+      nextRow.find("td").eq(0).text().trim() ||
+      format(add(new Date(), {days: 1}), "dd.MM.yyyy");
     let nextQueueTimes: string[] = getQueueTimes(nextRow, 1);
 
     if (nextQueueTimes.length === 0) {
