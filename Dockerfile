@@ -1,18 +1,10 @@
-# Використовуємо офіційний образ Ubuntu
-FROM ubuntu:20.04
+# Використовуємо офіційний образ Node.js зі встановленим Puppeteer
+FROM node:18-bullseye-slim
 
-# Додавання ключів та оновлення репозиторіїв
+# Встановлюємо залежності для Puppeteer
 RUN apt-get update && apt-get install -y \
-    software-properties-common \
-    && add-apt-repository universe \
-    && apt-get update
-
-# Встановлюємо необхідні пакети для Puppeteer
-RUN apt-get install -y \
     curl \
     unzip \
-    wget \
-    ca-certificates \
     fonts-liberation \
     libasound2 \
     libatk-bridge2.0-0 \
