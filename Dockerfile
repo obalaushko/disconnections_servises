@@ -1,8 +1,14 @@
 # Використовуємо офіційний образ Ubuntu
 FROM ubuntu:20.04
 
-# Встановлюємо необхідні пакети для Puppeteer та Bun
+# Додавання ключів та оновлення репозиторіїв
 RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    && add-apt-repository universe \
+    && apt-get update
+
+# Встановлюємо необхідні пакети для Puppeteer
+RUN apt-get install -y \
     curl \
     unzip \
     wget \
@@ -24,9 +30,9 @@ RUN apt-get update && apt-get install -y \
     xdg-utils \
     libgobject-2.0-0 \
     libx11-xcb1 \
-    libx11-6 && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    libx11-6 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Встановлюємо Bun
 RUN curl -fsSL https://bun.sh/install | bash
