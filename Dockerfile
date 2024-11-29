@@ -1,7 +1,7 @@
-# Використовуємо офіційний образ Node.js зі встановленим Puppeteer
+# Використовуємо офіційний образ Node.js з Puppeteer
 FROM node:18-bullseye-slim
 
-# Встановлюємо залежності для Puppeteer
+# Оновлюємо пакети та встановлюємо необхідні залежності
 RUN apt-get update && apt-get install -y \
     curl \
     unzip \
@@ -20,7 +20,6 @@ RUN apt-get update && apt-get install -y \
     libxdamage1 \
     libxrandr2 \
     xdg-utils \
-    libgobject-2.0-0 \
     libx11-xcb1 \
     libx11-6 \
     && apt-get clean \
