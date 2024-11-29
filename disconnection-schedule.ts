@@ -61,7 +61,10 @@ export async function fetchQueueSchedule(): Promise<
 
   try {
     // Запускаємо браузер
-    browser = await puppeteer.launch({ headless: true });
+    browser = await puppeteer.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
     const page = await browser.newPage();
 
     // Відкриваємо потрібну сторінку
