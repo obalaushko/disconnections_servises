@@ -8,9 +8,10 @@ const server = Bun.serve({
   async fetch(req) {
     try {
       // Пробуємо отримати дані основним методом
+      throw new Error("Skip fetchQueueSchedule!");
+
       const schedule = await fetchQueueSchedule();
       return Response.json({ status: "success", data: { schedule } });
-
     } catch (error) {
       console.warn(
         "Помилка в fetchQueueSchedule, переходимо до резервного методу:",
@@ -21,7 +22,6 @@ const server = Bun.serve({
         // Якщо основний метод не спрацював, використовуємо резервний
         const fallbackResult = await scrapeTable();
         return Response.json({ status: "fallback", data: fallbackResult });
-        
       } catch (fallbackError) {
         console.error("Помилка в scrapeTable:", fallbackError.message);
         return Response.json(
