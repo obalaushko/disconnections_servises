@@ -24,8 +24,8 @@ RUN apt-get update && apt-get install -y \
     xdg-utils \
     libgobject-2.0-0 \
     libx11-xcb1 \
-    libx11-6 \
-    --no-install-recommends && \
+    libx11-6 && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Встановлюємо Bun
