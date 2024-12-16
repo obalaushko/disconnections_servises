@@ -23,9 +23,9 @@ export async function scrapeTable(): Promise<Result | null> {
     const $ = cheerio.load(data);
 
     const table = $("table");
-    const firstRow = table.find("tr").eq(3);
+    const firstRow = table.find("tr").eq(4);
     const date: string = firstRow.find("td").eq(0).text().trim();
-    const nextRow = table.find("tr").eq(4);
+    const nextRow = table.find("tr").eq(5);
 
     // const cleanTimeString = (time: string): string => {
     //   const regex = /\d{2}:\d{2}-\d{2}:\d{2}/;
